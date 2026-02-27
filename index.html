@@ -2,13 +2,22 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Food List</title>
+<title>Leslie's food list</title>
 <style>
 body {
   font-family: Arial;
   padding: 20px;
   background: #121212;
   color: #ffffff;
+}
+
+/* Filter panel (hidden by default) */
+#filterPanel {
+  display: none;
+  margin-bottom: 12px;
+  background: #1e1e1e;
+  padding: 8px;
+  border-radius: 6px;
 }
 
 /* Input row */
@@ -18,12 +27,12 @@ body {
   align-items: center;
 }
 
-/* Ingredient box (green) */
+/* Ingredient box (white, black text) */
 #ingredientName {
   flex: 1;
-  background: #2e7d32;
-  color: white;
-  border: none;
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
   padding: 6px;
 }
 
@@ -36,7 +45,20 @@ body {
   padding: 6px;
 }
 
-/* Add ingredient button (green) */
+/* Date box (white, black font) */
+#foodDate {
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+  padding: 6px;
+}
+
+/* Buttons */
+button {
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 #addIngredientBtn {
   background: #2e7d32;
   color: white;
@@ -45,7 +67,6 @@ body {
   margin-top: 4px;
 }
 
-/* Save food button (orange) */
 #saveFoodBtn {
   background: #f57c00;
   color: white;
@@ -54,24 +75,13 @@ body {
   margin-top: 8px;
 }
 
-/* Date box (yellow) */
-#foodDate {
-  background: #fbc02d;
-  color: black;
-  border: none;
-  padding: 6px;
-}
-
-/* Controls */
-input, select, button {
-  border-radius: 4px;
-}
-
+/* Cards */
 .food-card {
   padding: 10px;
   margin: 8px 0;
   border-radius: 8px;
   color: #000;
+  background: #fce4ec;
 }
 
 .ingredients {
@@ -79,7 +89,7 @@ input, select, button {
   margin-top: 6px;
 }
 
-/* Buttons */
+/* Buttons inside cards */
 button.copy-btn {
   background: #1976d2;
   color: white;
@@ -98,9 +108,12 @@ button.delete-btn {
 </head>
 <body>
 
-<h2>Food List</h2>
+<h2>Leslie's food list</h2>
 
-<div class="controls">
+<!-- Filter toggle -->
+<button onclick="toggleFilters()">Filters</button>
+
+<div id="filterPanel">
   <input id="search" placeholder="Search food..." onkeyup="render()">
 
   <select id="sortName" onchange="render()">
@@ -118,10 +131,10 @@ button.delete-btn {
   </select>
 </div>
 
-<!-- Add food name -->
+<!-- Food name -->
 <input id="foodName" placeholder="Food name">
 
-<!-- Ingredient + quantity (green box) -->
+<!-- Ingredient input with autocomplete -->
 <div class="input-row">
   <input id="ingredientName" list="ingredientSuggestions" placeholder="Ingredient">
   <datalist id="ingredientSuggestions"></datalist>
@@ -144,10 +157,10 @@ button.delete-btn {
 
 <div id="ingredientList"></div>
 
-<!-- Date (yellow box) -->
+<!-- Date box -->
 <input id="foodDate" type="date">
 
-<!-- Save food (orange button) -->
+<!-- Save food -->
 <button id="saveFoodBtn" onclick="addFood()">Save Food</button>
 
 <div id="foodList"></div>
@@ -156,9 +169,15 @@ button.delete-btn {
 let foods = JSON.parse(localStorage.getItem('foods')) || [];
 let ingredients = [];
 
-// Save data
+// Save
 function save() {
   localStorage.setItem('foods', JSON.stringify(foods));
+}
+
+// Toggle filters
+function toggleFilters() {
+  const panel = document.getElementById('filterPanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 }
 
 // Random card color
@@ -229,7 +248,7 @@ function deleteIngredient(index) {
   renderIngredients();
 }
 
-// Save food
+// Add food
 function addFood() {
   const name = document.getElementById('foodName').value.trim();
   const date = document.getElementById('foodDate').value;
@@ -255,7 +274,7 @@ function addFood() {
   document.getElementById('foodDate').value = '';
 }
 
-// Suggestions from previous ingredients
+// Suggestions from previous ingredients (dropdown)
 function updateSuggestions() {
   const datalist = document.getElementById('ingredientSuggestions');
 
@@ -272,20 +291,15 @@ function updateSuggestions() {
   });
 }
 
-// Copy ingredients (WORKING)
+// Copy ingredients (working)
 function copyIngredients(text) {
-  navigator.clipboard.writeText(text)
-    .then(() => alert('Copied — paste in Messenger'))
-    .catch(() => {
-      // fallback
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      alert('Copied (fallback)');
-    });
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+  alert('Copied — paste in Messenger');
 }
 
 // Edit food
@@ -310,7 +324,7 @@ function deleteFood(index) {
   render();
 }
 
-// Date filter
+// Date filter dropdown
 function populateDateFilter() {
   const select = document.getElementById('dateFilter');
   const dates = [...new Set(foods.map(f => f.date))]
@@ -362,7 +376,6 @@ function render() {
   filtered.forEach((food, index) => {
     const div = document.createElement('div');
     div.className = 'food-card';
-    div.style.background = food.color;
 
     const ingredientsText = food.ingredients
       .map(i => `${i.name} - ${i.qty}`)
