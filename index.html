@@ -11,7 +11,7 @@ body {
   color: #ffffff;
 }
 
-/* Filter panel (hidden by default) */
+/* Filter panel */
 #filterPanel {
   display: none;
   margin-bottom: 12px;
@@ -20,14 +20,22 @@ body {
   border-radius: 6px;
 }
 
-/* Input row */
+/* Search */
+#search {
+  width: 100%;
+  padding: 6px;
+  background: white;
+  color: black;
+}
+
+/* Ingredient input row */
 .input-row {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-/* Ingredient box (white, black text) */
+/* Ingredient name (autocomplete) */
 #ingredientName {
   flex: 1;
   background: white;
@@ -36,16 +44,29 @@ body {
   padding: 6px;
 }
 
-/* Quantity dropdown (small, right) */
+/* Quantity dropdown */
 #quantity {
   width: 60px;
-  background: #1e1e1e;
-  color: white;
-  border: none;
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
   padding: 6px;
 }
 
-/* Date box (white, black font) */
+/* Unit dropdown */
+#unit {
+  width: 100px;
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+  padding: 6px;
+}
+
+/* Date box with label */
+.date-label {
+  margin-top: 8px;
+}
+
 #foodDate {
   background: white;
   color: black;
@@ -89,7 +110,7 @@ button {
   margin-top: 6px;
 }
 
-/* Buttons inside cards */
+/* Card buttons */
 button.copy-btn {
   background: #1976d2;
   color: white;
@@ -114,7 +135,8 @@ button.delete-btn {
 <button onclick="toggleFilters()">Filters</button>
 
 <div id="filterPanel">
-  <input id="search" placeholder="Search food..." onkeyup="render()">
+  <input id="search" placeholder="Search food...">
+  <button onclick="render()">Search</button>
 
   <select id="sortName" onchange="render()">
     <option value="az">Sort Name A → Z</option>
@@ -134,22 +156,20 @@ button.delete-btn {
 <!-- Food name -->
 <input id="foodName" placeholder="Food name">
 
-<!-- Ingredient input with autocomplete -->
+<!-- Ingredient row -->
 <div class="input-row">
   <input id="ingredientName" list="ingredientSuggestions" placeholder="Ingredient">
   <datalist id="ingredientSuggestions"></datalist>
 
-  <select id="quantity">
-    <option value="0">0</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-    <option value="9">9</option>
+  <input id="quantity" type="number" min="1" max="9" value="1">
+
+  <select id="unit">
+    <option value="pack">pack</option>
+    <option value="packs">packs</option>
+    <option value="tin">tin</option>
+    <option value="tins">tins</option>
+    <option value="carton">carton</option>
+    <option value="cartons">cartons</option>
   </select>
 </div>
 
@@ -157,7 +177,8 @@ button.delete-btn {
 
 <div id="ingredientList"></div>
 
-<!-- Date box -->
+<!-- Date with label -->
+<div class="date-label">Date:</div>
 <input id="foodDate" type="date">
 
 <!-- Save food -->
@@ -189,10 +210,11 @@ function randomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// Add ingredient with quantity
+// Add ingredient (quantity + unit)
 function addIngredient() {
   const name = document.getElementById('ingredientName').value.trim();
   const qty = document.getElementById('quantity').value;
+  const unit = document.getElementById('unit').value;
 
   if (!name) {
     alert('Enter ingredient name');
@@ -203,12 +225,13 @@ function addIngredient() {
 
   if (existing) {
     existing.qty = qty;
+    existing.unit = unit;
   } else {
-    ingredients.push({ name, qty });
+    ingredients.push({ name, qty, unit });
   }
 
   document.getElementById('ingredientName').value = '';
-  document.getElementById('quantity').value = '0';
+  document.getElementById('quantity').value = '1';
 
   renderIngredients();
   updateSuggestions();
@@ -227,7 +250,7 @@ function renderIngredients() {
     div.style.borderRadius = '4px';
 
     div.innerHTML = `
-      ${ing.name} - ${ing.qty}
+      ${ing.qty} ${ing.unit} ${ing.name}
       <button onclick="editIngredient(${index})">Edit</button>
       <button onclick="deleteIngredient(${index})">Delete</button>
     `;
@@ -239,6 +262,7 @@ function editIngredient(index) {
   const ing = ingredients[index];
   document.getElementById('ingredientName').value = ing.name;
   document.getElementById('quantity').value = ing.qty;
+  document.getElementById('unit').value = ing.unit;
   ingredients.splice(index, 1);
   renderIngredients();
 }
@@ -274,7 +298,7 @@ function addFood() {
   document.getElementById('foodDate').value = '';
 }
 
-// Suggestions from previous ingredients (dropdown)
+// Suggestions (autocomplete)
 function updateSuggestions() {
   const datalist = document.getElementById('ingredientSuggestions');
 
@@ -291,7 +315,7 @@ function updateSuggestions() {
   });
 }
 
-// Copy ingredients (working)
+// Copy ingredients (WORKING)
 function copyIngredients(text) {
   const textarea = document.createElement('textarea');
   textarea.value = text;
@@ -378,7 +402,7 @@ function render() {
     div.className = 'food-card';
 
     const ingredientsText = food.ingredients
-      .map(i => `${i.name} - ${i.qty}`)
+      .map(i => `${i.qty} ${i.unit} ${i.name}`)
       .join('\n');
 
     div.innerHTML = `
