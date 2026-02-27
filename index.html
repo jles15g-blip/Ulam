@@ -11,19 +11,41 @@ body {
   color: #ffffff;
 }
 
-input, select, button {
-  width: 100%;
-  padding: 6px;
-  margin: 4px 0;
-  background: #1e1e1e;
-  color: #ffffff;
-  border: 1px solid #333;
+/* Input area */
+.input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
-button {
+input, select, button {
+  padding: 6px;
+  margin: 4px 0;
+  border: none;
   border-radius: 4px;
 }
 
+input {
+  background: #1e1e1e;
+  color: white;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Ingredient box and quantity */
+#ingredientName {
+  flex: 1;
+}
+
+#quantity {
+  width: 60px;
+  background: #222;
+  color: white;
+}
+
+/* Cards */
 .food-card {
   padding: 10px;
   margin: 8px 0;
@@ -36,8 +58,26 @@ button {
   margin-top: 6px;
 }
 
-.controls {
-  margin-bottom: 12px;
+/* Colors (different but functional) */
+.food-card {
+  background: #fce4ec;
+}
+
+button {
+  background: #333;
+  color: white;
+}
+
+button.copy-btn {
+  background: #1976d2;
+}
+
+button.edit-btn {
+  background: #388e3c;
+}
+
+button.delete-btn {
+  background: #d32f2f;
 }
 </style>
 </head>
@@ -65,22 +105,24 @@ button {
 
 <input id="foodName" placeholder="Food name">
 
-<!-- Ingredient input with dropdown suggestions -->
-<input id="ingredientName" list="ingredientSuggestions" placeholder="Ingredient name">
-<datalist id="ingredientSuggestions"></datalist>
+<!-- Ingredient + quantity row -->
+<div class="input-row">
+  <input id="ingredientName" list="ingredientSuggestions" placeholder="Ingredient">
+  <datalist id="ingredientSuggestions"></datalist>
 
-<select id="quantity">
-  <option value="0">0</option>
-  <option value="1">1</option>
-  <option value="2">2</option>
-  <option value="3">3</option>
-  <option value="4">4</option>
-  <option value="5">5</option>
-  <option value="6">6</option>
-  <option value="7">7</option>
-  <option value="8">8</option>
-  <option value="9">9</option>
-</select>
+  <select id="quantity">
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+  </select>
+</div>
 
 <button onclick="addIngredient()">Add Ingredient</button>
 
@@ -96,10 +138,12 @@ button {
 let foods = JSON.parse(localStorage.getItem('foods')) || [];
 let ingredients = [];
 
+// Save data
 function save() {
   localStorage.setItem('foods', JSON.stringify(foods));
 }
 
+// Random card color
 function randomColor() {
   const colors = [
     '#fce4ec', '#e8f5e9', '#e3f2fd',
@@ -108,7 +152,7 @@ function randomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// Add ingredient with quantity (updates if exists)
+// Add ingredient with quantity
 function addIngredient() {
   const name = document.getElementById('ingredientName').value.trim();
   const qty = document.getElementById('quantity').value;
@@ -133,13 +177,18 @@ function addIngredient() {
   updateSuggestions();
 }
 
-// Render ingredient list (for editing before saving food)
+// Render ingredients before saving food
 function renderIngredients() {
   const list = document.getElementById('ingredientList');
   list.innerHTML = '';
 
   ingredients.forEach((ing, index) => {
     const div = document.createElement('div');
+    div.style.background = '#222';
+    div.style.padding = '6px';
+    div.style.margin = '4px 0';
+    div.style.borderRadius = '4px';
+
     div.innerHTML = `
       ${ing.name} - ${ing.qty}
       <button onclick="editIngredient(${index})">Edit</button>
@@ -162,7 +211,7 @@ function deleteIngredient(index) {
   renderIngredients();
 }
 
-// Save food with ingredients and date
+// Save food
 function addFood() {
   const name = document.getElementById('foodName').value.trim();
   const date = document.getElementById('foodDate').value;
@@ -188,7 +237,7 @@ function addFood() {
   document.getElementById('foodDate').value = '';
 }
 
-// Suggest existing ingredients (dropdown)
+// Suggestions from previous ingredients
 function updateSuggestions() {
   const datalist = document.getElementById('ingredientSuggestions');
 
@@ -205,14 +254,14 @@ function updateSuggestions() {
   });
 }
 
-// Copy ingredients to clipboard
+// Copy ingredients (FIXED)
 function copyIngredients(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    alert('Ingredients copied');
-  });
+  navigator.clipboard.writeText(text)
+    .then(() => alert('Ingredients copied'))
+    .catch(() => alert('Copy failed'));
 }
 
-// Edit food (load into form for editing)
+// Edit food
 function editFood(index) {
   const food = foods[index];
 
@@ -234,7 +283,7 @@ function deleteFood(index) {
   render();
 }
 
-// Date filter dropdown
+// Date filter
 function populateDateFilter() {
   const select = document.getElementById('dateFilter');
   const dates = [...new Set(foods.map(f => f.date))]
@@ -250,7 +299,7 @@ function populateDateFilter() {
   });
 }
 
-// Render food list (search, sort, filter)
+// Render list
 function render() {
   const list = document.getElementById('foodList');
   const query = document.getElementById('search').value.toLowerCase();
@@ -281,8 +330,6 @@ function render() {
     filtered.sort((a, b) => b.name.localeCompare(a.name));
   }
 
-  list.innerHTML = '';
-
   filtered.forEach((food, index) => {
     const div = document.createElement('div');
     div.className = 'food-card';
@@ -297,12 +344,12 @@ function render() {
       <small>Last eaten: ${food.date}</small>
       <div class="ingredients">${ingredientsText}</div>
 
-      <button onclick="copyIngredients('${ingredientsText.replace(/'/g, "\\'")}')">
-        Copy Ingredients
+      <button class="copy-btn" onclick="copyIngredients('${ingredientsText.replace(/'/g, "\\'")}')">
+        Copy
       </button>
 
-      <button onclick="editFood(${index})">Edit</button>
-      <button onclick="deleteFood(${index})">Delete</button>
+      <button class="edit-btn" onclick="editFood(${index})">Edit</button>
+      <button class="delete-btn" onclick="deleteFood(${index})">Delete</button>
     `;
 
     list.appendChild(div);
