@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food List</title>
+
+<style>
+body {
+  font-family: Arial;
+  padding: 20px;
+}
+
+.food {
+  background-color: #f2f2f2;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ingredients {
+  display: none;
+  background-color: #e6f2ff;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+}
+</style>
+
+<script>
+function toggle(id) {
+  var x = document.getElementById(id);
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>
+
+</head>
+
+<body>
+
+<h2>Food Menu</h2>
+
+<div class="food" onclick="toggle('adobo')">
+  Adobo
+</div>
+<div id="adobo" class="ingredients">
+  2 packs Pork belly<br>
+  Soy sauce<br>
+  Vinegar<br>
+  Garlic<br>
+  Bay leaves<br>
+  Pepper
+</div>
+
+<div class="food" onclick="toggle('sinigang')">
+  Sinigang
+</div>
+<div id="sinigang" class="ingredients">
+  Pork ribs<br>
+  Sinigang mix<br>
+  Tomato<br>
+  Onion<br>
+  Radish<br>
+  Kang kong
+</div>
+
+</body>
+</html>
