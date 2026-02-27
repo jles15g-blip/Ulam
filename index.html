@@ -1,3 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food List</title>
+<style>
+body {
+  font-family: Arial;
+  padding: 20px;
+  background: #121212;
+  color: #ffffff;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 6px;
+  margin: 4px 0;
+  background: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid #333;
+}
+
+button {
+  border-radius: 4px;
+}
+
+.food-card {
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  color: #000;
+}
+
+.ingredients {
+  white-space: pre-line;
+  margin-top: 6px;
+}
+
+.controls {
+  margin-bottom: 12px;
+}
+</style>
+</head>
+<body>
+
+<h2>Food List</h2>
+
+<div class="controls">
+  <input id="search" placeholder="Search food..." onkeyup="render()">
+
+  <select id="sortName" onchange="render()">
+    <option value="az">Sort Name A → Z</option>
+    <option value="za">Sort Name Z → A</option>
+  </select>
+
+  <select id="sortDate" onchange="render()">
+    <option value="newest">Date: Newest → Oldest</option>
+    <option value="oldest">Date: Oldest → Newest</option>
+  </select>
+
+  <select id="dateFilter" onchange="render()">
+    <option value="">All dates</option>
+  </select>
+</div>
+
+<input id="foodName" placeholder="Food name">
+
+<!-- Ingredient input with dropdown suggestions -->
+<input id="ingredientName" list="ingredientSuggestions" placeholder="Ingredient name">
+<datalist id="ingredientSuggestions"></datalist>
+
+<select id="quantity">
+  <option value="0">0</option>
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5">5</option>
+  <option value="6">6</option>
+  <option value="7">7</option>
+  <option value="8">8</option>
+  <option value="9">9</option>
+</select>
+
+<button onclick="addIngredient()">Add Ingredient</button>
+
+<div id="ingredientList"></div>
+
+<input id="foodDate" type="date">
+
+<button onclick="addFood()">Save Food</button>
+
+<div id="foodList"></div>
+
 <script>
 let foods = JSON.parse(localStorage.getItem('foods')) || [];
 let ingredients = [];
@@ -14,6 +108,7 @@ function randomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
+// Add ingredient with quantity (updates if exists)
 function addIngredient() {
   const name = document.getElementById('ingredientName').value.trim();
   const qty = document.getElementById('quantity').value;
@@ -38,6 +133,7 @@ function addIngredient() {
   updateSuggestions();
 }
 
+// Render ingredient list (for editing before saving food)
 function renderIngredients() {
   const list = document.getElementById('ingredientList');
   list.innerHTML = '';
@@ -66,6 +162,7 @@ function deleteIngredient(index) {
   renderIngredients();
 }
 
+// Save food with ingredients and date
 function addFood() {
   const name = document.getElementById('foodName').value.trim();
   const date = document.getElementById('foodDate').value;
@@ -91,10 +188,10 @@ function addFood() {
   document.getElementById('foodDate').value = '';
 }
 
+// Suggest existing ingredients (dropdown)
 function updateSuggestions() {
   const datalist = document.getElementById('ingredientSuggestions');
 
-  // Collect all ingredient names from saved foods
   const existing = [...new Set(
     foods.flatMap(f => f.ingredients.map(i => i.name))
   )];
@@ -108,12 +205,14 @@ function updateSuggestions() {
   });
 }
 
+// Copy ingredients to clipboard
 function copyIngredients(text) {
   navigator.clipboard.writeText(text).then(() => {
     alert('Ingredients copied');
   });
 }
 
+// Edit food (load into form for editing)
 function editFood(index) {
   const food = foods[index];
 
@@ -128,12 +227,14 @@ function editFood(index) {
   render();
 }
 
+// Delete food
 function deleteFood(index) {
   foods.splice(index, 1);
   save();
   render();
 }
 
+// Date filter dropdown
 function populateDateFilter() {
   const select = document.getElementById('dateFilter');
   const dates = [...new Set(foods.map(f => f.date))]
@@ -149,6 +250,7 @@ function populateDateFilter() {
   });
 }
 
+// Render food list (search, sort, filter)
 function render() {
   const list = document.getElementById('foodList');
   const query = document.getElementById('search').value.toLowerCase();
@@ -212,3 +314,6 @@ function render() {
 save();
 render();
 </script>
+
+</body>
+</html>
