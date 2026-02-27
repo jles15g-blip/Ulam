@@ -3,70 +3,102 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Food List</title>
-
 <style>
 body {
   font-family: Arial;
   padding: 20px;
 }
 
-.food {
-  background-color: #f2f2f2;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 8px;
-  cursor: pointer;
+.food-item {
+  background: #f2f2f2;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
 }
 
 .ingredients {
-  display: none;
-  background-color: #e6f2ff;
-  padding: 10px;
-  margin-top: 5px;
-  border-radius: 6px;
+  margin-left: 10px;
+  color: #333;
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px;
+}
+
+input {
+  width: 100%;
+  padding: 6px;
+  margin: 4px 0;
 }
 </style>
-
-<script>
-function toggle(id) {
-  var x = document.getElementById(id);
-  if (x.style.display === "none") {
-    x.style.display = "block";
-  } else {
-    x.style.display = "none";
-  }
-}
-</script>
-
 </head>
 
 <body>
 
-<h2>Food Menu</h2>
+<h2>Food List</h2>
 
-<div class="food" onclick="toggle('adobo')">
-  Adobo
-</div>
-<div id="adobo" class="ingredients">
-  2 packs Pork belly<br>
-  Soy sauce<br>
-  Vinegar<br>
-  Garlic<br>
-  Bay leaves<br>
-  Pepper
+<div>
+  <input id="foodName" placeholder="Food name">
+  <input id="foodIngredients" placeholder="Ingredients (comma separated)">
+  <button onclick="addFood()">Add Food</button>
 </div>
 
-<div class="food" onclick="toggle('sinigang')">
-  Sinigang
-</div>
-<div id="sinigang" class="ingredients">
-  Pork ribs<br>
-  Sinigang mix<br>
-  Tomato<br>
-  Onion<br>
-  Radish<br>
-  Kang kong
-</div>
+<div id="foodList"></div>
+
+<script>
+let foods = JSON.parse(localStorage.getItem('foods')) || [];
+
+function save() {
+  localStorage.setItem('foods', JSON.stringify(foods));
+}
+
+function render() {
+  const list = document.getElementById('foodList');
+  list.innerHTML = '';
+
+  foods.forEach((food, index) => {
+    const div = document.createElement('div');
+    div.className = 'food-item';
+
+    div.innerHTML = `
+      <strong>${food.name}</strong>
+      <div class="ingredients">${food.ingredients.join(', ')}</div>
+      <button onclick="deleteFood(${index})">Delete</button>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+function addFood() {
+  const name = document.getElementById('foodName').value.trim();
+  const ingredients = document.getElementById('foodIngredients').value
+    .split(',')
+    .map(i => i.trim())
+    .filter(i => i);
+
+  if (!name || ingredients.length === 0) {
+    alert('Enter food name and ingredients');
+    return;
+  }
+
+  foods.push({ name, ingredients });
+  save();
+  render();
+
+  document.getElementById('foodName').value = '';
+  document.getElementById('foodIngredients').value = '';
+}
+
+function deleteFood(index) {
+  foods.splice(index, 1);
+  save();
+  render();
+}
+
+render();
+</script>
 
 </body>
 </html>
