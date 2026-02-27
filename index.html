@@ -9,7 +9,7 @@ body {
   padding: 20px;
 }
 
-input, textarea {
+input, textarea, select {
   width: 100%;
   padding: 6px;
   margin: 4px 0;
@@ -24,7 +24,6 @@ button {
   padding: 10px;
   margin: 8px 0;
   border-radius: 8px;
-  color: #000;
 }
 
 .ingredients {
@@ -32,7 +31,7 @@ button {
   margin-top: 6px;
 }
 
-.search {
+.controls {
   margin-bottom: 12px;
 }
 </style>
@@ -41,11 +40,24 @@ button {
 
 <h2>Food List</h2>
 
-<input id="search" class="search" placeholder="Search food..." onkeyup="render()">
+<div class="controls">
+  <input id="search" placeholder="Search food..." onkeyup="render()">
+
+  <select id="sort" onchange="render()">
+    <option value="az">Sort A → Z</option>
+    <option value="za">Sort Z → A</option>
+  </select>
+
+  <select id="dateFilter" onchange="render()">
+    <option value="">All dates</option>
+  </select>
+</div>
 
 <input id="foodName" placeholder="Food name">
 
 <textarea id="foodIngredients" placeholder="Ingredients (one per line)"></textarea>
+
+<input id="foodDate" type="date">
 
 <button onclick="addFood()">Add Food</button>
 
@@ -56,6 +68,7 @@ let foods = JSON.parse(localStorage.getItem('foods')) || [];
 
 function save() {
   localStorage.setItem('foods', JSON.stringify(foods));
+  populateDateFilter();
 }
 
 function randomColor() {
@@ -69,6 +82,7 @@ function randomColor() {
 function addFood() {
   const name = document.getElementById('foodName').value.trim();
   const ingredientsText = document.getElementById('foodIngredients').value.trim();
+  const date = document.getElementById('foodDate').value;
 
   if (!name || !ingredientsText) {
     alert('Enter food name and ingredients');
@@ -80,6 +94,7 @@ function addFood() {
   foods.push({
     name,
     ingredients,
+    date: date || 'No date',
     color: randomColor()
   });
 
@@ -88,29 +103,58 @@ function addFood() {
 
   document.getElementById('foodName').value = '';
   document.getElementById('foodIngredients').value = '';
+  document.getElementById('foodDate').value = '';
+}
+
+function populateDateFilter() {
+  const select = document.getElementById('dateFilter');
+  const dates = [...new Set(foods.map(f => f.date))].filter(d => d && d !== 'No date');
+
+  select.innerHTML = '<option value="">All dates</option>';
+
+  dates.forEach(date => {
+    const opt = document.createElement('option');
+    opt.value = date;
+    opt.textContent = date;
+    select.appendChild(opt);
+  });
 }
 
 function render() {
   const list = document.getElementById('foodList');
   const query = document.getElementById('search').value.toLowerCase();
+  const sort = document.getElementById('sort').value;
+  const dateFilter = document.getElementById('dateFilter').value;
 
   list.innerHTML = '';
 
-  foods
-    .filter(food => food.name.toLowerCase().includes(query))
-    .forEach((food, index) => {
-      const div = document.createElement('div');
-      div.className = 'food-card';
-      div.style.background = food.color;
+  let filtered = foods
+    .filter(food => food.name.toLowerCase().includes(query));
 
-      div.innerHTML = `
-        <strong>${food.name}</strong>
-        <div class="ingredients">${food.ingredients.join('\n')}</div>
-        <button onclick="deleteFood(${index})">Delete</button>
-      `;
+  if (dateFilter) {
+    filtered = filtered.filter(food => food.date === dateFilter);
+  }
 
-      list.appendChild(div);
-    });
+  if (sort === 'az') {
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+  } else {
+    filtered.sort((a, b) => b.name.localeCompare(a.name));
+  }
+
+  filtered.forEach((food, index) => {
+    const div = document.createElement('div');
+    div.className = 'food-card';
+    div.style.background = food.color;
+
+    div.innerHTML = `
+      <strong>${food.name}</strong><br>
+      <small>Last eaten: ${food.date}</small>
+      <div class="ingredients">${food.ingredients.join('\n')}</div>
+      <button onclick="deleteFood(${index})">Delete</button>
+    `;
+
+    list.appendChild(div);
+  });
 }
 
 function deleteFood(index) {
@@ -119,6 +163,7 @@ function deleteFood(index) {
   render();
 }
 
+save();
 render();
 </script>
 
