@@ -1,92 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Food List</title>
-<style>
-body {
-  font-family: Arial;
-  padding: 20px;
-  background: #121212;
-  color: #ffffff;
-}
-
-input, textarea, select {
-  width: 100%;
-  padding: 6px;
-  margin: 4px 0;
-  background: #1e1e1e;
-  color: #ffffff;
-  border: 1px solid #333;
-}
-
-button {
-  margin-top: 6px;
-  padding: 8px;
-  background: #333;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-}
-
-.food-card {
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  color: #000;
-}
-
-.ingredients {
-  white-space: pre-line;
-  margin-top: 6px;
-}
-
-.controls {
-  margin-bottom: 12px;
-}
-</style>
-</head>
-<body>
-
-<h2>Food List</h2>
-
-<div class="controls">
-  <input id="search" placeholder="Search food..." onkeyup="render()">
-
-  <select id="sortName" onchange="render()">
-    <option value="az">Sort Name A → Z</option>
-    <option value="za">Sort Name Z → A</option>
-  </select>
-
-  <select id="sortDate" onchange="render()">
-    <option value="newest">Date: Newest → Oldest</option>
-    <option value="oldest">Date: Oldest → Newest</option>
-  </select>
-
-  <select id="dateFilter" onchange="render()">
-    <option value="">All dates</option>
-  </select>
-</div>
-
-<input id="foodName" placeholder="Food name">
-
-<textarea id="foodIngredients" placeholder="Ingredients with quantity (one per line)
-Example:
-Pork belly - 1kg
-Soy sauce - 2 tbsp"></textarea>
-
-<input id="foodDate" type="date">
-
-<button onclick="addFood()">Add Food</button>
-
-<div id="foodList"></div>
-
 <script>
 let foods = JSON.parse(localStorage.getItem('foods')) || [];
+let ingredients = [];
 
 function save() {
   localStorage.setItem('foods', JSON.stringify(foods));
-  populateDateFilter();
 }
 
 function randomColor() {
@@ -97,29 +14,201 @@ function randomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-function addFood() {
-  const name = document.getElementById('foodName').value.trim();
-  const ingredientsText = document.getElementById('foodIngredients').value.trim();
-  const date = document.getElementById('foodDate').value;
+function addIngredient() {
+  const name = document.getElementById('ingredientName').value.trim();
+  const qty = document.getElementById('quantity').value;
 
-  if (!name || !ingredientsText) {
-    alert('Enter food name and ingredients with quantity');
+  if (!name) {
+    alert('Enter ingredient name');
     return;
   }
 
-  const ingredients = ingredientsText
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line);
+  const existing = ingredients.find(i => i.name.toLowerCase() === name.toLowerCase());
+
+  if (existing) {
+    existing.qty = qty;
+  } else {
+    ingredients.push({ name, qty });
+  }
+
+  document.getElementById('ingredientName').value = '';
+  document.getElementById('quantity').value = '0';
+
+  renderIngredients();
+  updateSuggestions();
+}
+
+function renderIngredients() {
+  const list = document.getElementById('ingredientList');
+  list.innerHTML = '';
+
+  ingredients.forEach((ing, index) => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      ${ing.name} - ${ing.qty}
+      <button onclick="editIngredient(${index})">Edit</button>
+      <button onclick="deleteIngredient(${index})">Delete</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function editIngredient(index) {
+  const ing = ingredients[index];
+  document.getElementById('ingredientName').value = ing.name;
+  document.getElementById('quantity').value = ing.qty;
+  ingredients.splice(index, 1);
+  renderIngredients();
+}
+
+function deleteIngredient(index) {
+  ingredients.splice(index, 1);
+  renderIngredients();
+}
+
+function addFood() {
+  const name = document.getElementById('foodName').value.trim();
+  const date = document.getElementById('foodDate').value;
+
+  if (!name || ingredients.length === 0) {
+    alert('Enter food name and at least one ingredient');
+    return;
+  }
 
   foods.push({
     name,
-    ingredients,
+    ingredients: [...ingredients],
     date: date || 'No date',
     color: randomColor()
   });
 
+  ingredients = [];
+  renderIngredients();
   save();
   render();
 
-  document.getElementById
+  document.getElementById('foodName').value = '';
+  document.getElementById('foodDate').value = '';
+}
+
+function updateSuggestions() {
+  const datalist = document.getElementById('ingredientSuggestions');
+
+  // Collect all ingredient names from saved foods
+  const existing = [...new Set(
+    foods.flatMap(f => f.ingredients.map(i => i.name))
+  )];
+
+  datalist.innerHTML = '';
+
+  existing.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    datalist.appendChild(opt);
+  });
+}
+
+function copyIngredients(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Ingredients copied');
+  });
+}
+
+function editFood(index) {
+  const food = foods[index];
+
+  document.getElementById('foodName').value = food.name;
+  document.getElementById('foodDate').value = food.date === 'No date' ? '' : food.date;
+
+  ingredients = [...food.ingredients];
+  renderIngredients();
+
+  foods.splice(index, 1);
+  save();
+  render();
+}
+
+function deleteFood(index) {
+  foods.splice(index, 1);
+  save();
+  render();
+}
+
+function populateDateFilter() {
+  const select = document.getElementById('dateFilter');
+  const dates = [...new Set(foods.map(f => f.date))]
+    .filter(d => d && d !== 'No date');
+
+  select.innerHTML = '<option value="">All dates</option>';
+
+  dates.forEach(date => {
+    const opt = document.createElement('option');
+    opt.value = date;
+    opt.textContent = date;
+    select.appendChild(opt);
+  });
+}
+
+function render() {
+  const list = document.getElementById('foodList');
+  const query = document.getElementById('search').value.toLowerCase();
+  const sortName = document.getElementById('sortName').value;
+  const sortDate = document.getElementById('sortDate').value;
+  const dateFilter = document.getElementById('dateFilter').value;
+
+  list.innerHTML = '';
+
+  let filtered = foods.filter(food =>
+    food.name.toLowerCase().includes(query)
+  );
+
+  if (dateFilter) {
+    filtered = filtered.filter(food => food.date === dateFilter);
+  }
+
+  filtered.sort((a, b) => {
+    const da = a.date === 'No date' ? 0 : new Date(a.date).getTime();
+    const db = b.date === 'No date' ? 0 : new Date(b.date).getTime();
+
+    return sortDate === 'newest' ? db - da : da - db;
+  });
+
+  if (sortName === 'az') {
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+  } else {
+    filtered.sort((a, b) => b.name.localeCompare(a.name));
+  }
+
+  list.innerHTML = '';
+
+  filtered.forEach((food, index) => {
+    const div = document.createElement('div');
+    div.className = 'food-card';
+    div.style.background = food.color;
+
+    const ingredientsText = food.ingredients
+      .map(i => `${i.name} - ${i.qty}`)
+      .join('\n');
+
+    div.innerHTML = `
+      <strong>${food.name}</strong><br>
+      <small>Last eaten: ${food.date}</small>
+      <div class="ingredients">${ingredientsText}</div>
+
+      <button onclick="copyIngredients('${ingredientsText.replace(/'/g, "\\'")}')">
+        Copy Ingredients
+      </button>
+
+      <button onclick="editFood(${index})">Edit</button>
+      <button onclick="deleteFood(${index})">Delete</button>
+    `;
+
+    list.appendChild(div);
+  });
+
+  updateSuggestions();
+}
+
+save();
+render();
+</script>
