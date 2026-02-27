@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leslie's food list</title>
+<title>Leslie’s Food List</title>
 <style>
 body {
   font-family: Arial;
@@ -11,7 +11,16 @@ body {
   color: #ffffff;
 }
 
-/* Filter panel */
+/* Search bar (outside filter) */
+#search {
+  width: 100%;
+  padding: 8px;
+  background: white;
+  color: black;
+  margin-bottom: 8px;
+}
+
+/* Filter panel (hidden) */
 #filterPanel {
   display: none;
   margin-bottom: 12px;
@@ -20,22 +29,24 @@ body {
   border-radius: 6px;
 }
 
-/* Search */
-#search {
+/* Food name (bigger) */
+#foodName {
   width: 100%;
-  padding: 6px;
+  padding: 10px;
+  font-size: 16px;
   background: white;
   color: black;
+  border: 1px solid #ccc;
 }
 
-/* Ingredient input row */
+/* Ingredient row */
 .input-row {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-/* Ingredient name (autocomplete) */
+/* Ingredient autocomplete */
 #ingredientName {
   flex: 1;
   background: white;
@@ -62,11 +73,7 @@ body {
   padding: 6px;
 }
 
-/* Date box with label */
-.date-label {
-  margin-top: 8px;
-}
-
+/* Date box */
 #foodDate {
   background: white;
   color: black;
@@ -129,15 +136,15 @@ button.delete-btn {
 </head>
 <body>
 
-<h2>Leslie's food list</h2>
+<h2>Leslie’s Food List</h2>
+
+<!-- Search (separate) -->
+<input id="search" placeholder="Search food..." onkeyup="render()">
 
 <!-- Filter toggle -->
 <button onclick="toggleFilters()">Filters</button>
 
 <div id="filterPanel">
-  <input id="search" placeholder="Search food...">
-  <button onclick="render()">Search</button>
-
   <select id="sortName" onchange="render()">
     <option value="az">Sort Name A → Z</option>
     <option value="za">Sort Name Z → A</option>
@@ -147,13 +154,9 @@ button.delete-btn {
     <option value="newest">Date: Newest → Oldest</option>
     <option value="oldest">Date: Oldest → Newest</option>
   </select>
-
-  <select id="dateFilter" onchange="render()">
-    <option value="">All dates</option>
-  </select>
 </div>
 
-<!-- Food name -->
+<!-- Food name (bigger) -->
 <input id="foodName" placeholder="Food name">
 
 <!-- Ingredient row -->
@@ -177,8 +180,7 @@ button.delete-btn {
 
 <div id="ingredientList"></div>
 
-<!-- Date with label -->
-<div class="date-label">Date:</div>
+<!-- Date -->
 <input id="foodDate" type="date">
 
 <!-- Save food -->
@@ -210,7 +212,7 @@ function randomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// Add ingredient (quantity + unit)
+// Add ingredient
 function addIngredient() {
   const name = document.getElementById('ingredientName').value.trim();
   const qty = document.getElementById('quantity').value;
@@ -315,7 +317,7 @@ function updateSuggestions() {
   });
 }
 
-// Copy ingredients (WORKING)
+// Copy ingredients (working)
 function copyIngredients(text) {
   const textarea = document.createElement('textarea');
   textarea.value = text;
@@ -348,39 +350,18 @@ function deleteFood(index) {
   render();
 }
 
-// Date filter dropdown
-function populateDateFilter() {
-  const select = document.getElementById('dateFilter');
-  const dates = [...new Set(foods.map(f => f.date))]
-    .filter(d => d && d !== 'No date');
-
-  select.innerHTML = '<option value="">All dates</option>';
-
-  dates.forEach(date => {
-    const opt = document.createElement('option');
-    opt.value = date;
-    opt.textContent = date;
-    select.appendChild(opt);
-  });
-}
-
-// Render list
+// Render list (search + sort)
 function render() {
   const list = document.getElementById('foodList');
   const query = document.getElementById('search').value.toLowerCase();
   const sortName = document.getElementById('sortName').value;
   const sortDate = document.getElementById('sortDate').value;
-  const dateFilter = document.getElementById('dateFilter').value;
 
   list.innerHTML = '';
 
   let filtered = foods.filter(food =>
     food.name.toLowerCase().includes(query)
   );
-
-  if (dateFilter) {
-    filtered = filtered.filter(food => food.date === dateFilter);
-  }
 
   filtered.sort((a, b) => {
     const da = a.date === 'No date' ? 0 : new Date(a.date).getTime();
