@@ -29,4 +29,98 @@ button {
 
 .ingredients {
   white-space: pre-line;
-  margin-top:
+  margin-top: 6px;
+}
+
+.search {
+  margin-bottom: 12px;
+}
+</style>
+</head>
+<body>
+
+<h2>Food List</h2>
+
+<input id="search" class="search" placeholder="Search food..." onkeyup="render()">
+
+<input id="foodName" placeholder="Food name">
+
+<textarea id="foodIngredients" placeholder="Ingredients (one per line)"></textarea>
+
+<button onclick="addFood()">Add Food</button>
+
+<div id="foodList"></div>
+
+<script>
+let foods = JSON.parse(localStorage.getItem('foods')) || [];
+
+function save() {
+  localStorage.setItem('foods', JSON.stringify(foods));
+}
+
+function randomColor() {
+  const colors = [
+    '#fce4ec', '#e8f5e9', '#e3f2fd',
+    '#fff3e0', '#f3e5f5', '#e0f7fa'
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function addFood() {
+  const name = document.getElementById('foodName').value.trim();
+  const ingredientsText = document.getElementById('foodIngredients').value.trim();
+
+  if (!name || !ingredientsText) {
+    alert('Enter food name and ingredients');
+    return;
+  }
+
+  const ingredients = ingredientsText.split('\n').map(i => i.trim()).filter(i => i);
+
+  foods.push({
+    name,
+    ingredients,
+    color: randomColor()
+  });
+
+  save();
+  render();
+
+  document.getElementById('foodName').value = '';
+  document.getElementById('foodIngredients').value = '';
+}
+
+function render() {
+  const list = document.getElementById('foodList');
+  const query = document.getElementById('search').value.toLowerCase();
+
+  list.innerHTML = '';
+
+  foods
+    .filter(food => food.name.toLowerCase().includes(query))
+    .forEach((food, index) => {
+      const div = document.createElement('div');
+      div.className = 'food-card';
+      div.style.background = food.color;
+
+      div.innerHTML = `
+        <strong>${food.name}</strong>
+        <div class="ingredients">${food.ingredients.join('\n')}</div>
+        <button onclick="deleteFood(${index})">Delete</button>
+      `;
+
+      list.appendChild(div);
+    });
+}
+
+function deleteFood(index) {
+  foods.splice(index, 1);
+  save();
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
