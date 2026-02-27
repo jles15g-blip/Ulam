@@ -120,6 +120,24 @@ function populateDateFilter() {
   });
 }
 
+function copyIngredients(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Ingredients copied');
+  });
+}
+
+function editFood(index) {
+  const food = foods[index];
+
+  document.getElementById('foodName').value = food.name;
+  document.getElementById('foodIngredients').value = food.ingredients.join('\n');
+  document.getElementById('foodDate').value = food.date === 'No date' ? '' : food.date;
+
+  foods.splice(index, 1);
+  save();
+  render();
+}
+
 function render() {
   const list = document.getElementById('foodList');
   const query = document.getElementById('search').value.toLowerCase();
@@ -146,10 +164,18 @@ function render() {
     div.className = 'food-card';
     div.style.background = food.color;
 
+    const ingredientsText = food.ingredients.join('\n');
+
     div.innerHTML = `
       <strong>${food.name}</strong><br>
       <small>Last eaten: ${food.date}</small>
-      <div class="ingredients">${food.ingredients.join('\n')}</div>
+      <div class="ingredients">${ingredientsText}</div>
+
+      <button onclick="copyIngredients('${ingredientsText.replace(/'/g, "\\'")}')">
+        Copy Ingredients
+      </button>
+
+      <button onclick="editFood(${index})">Edit</button>
       <button onclick="deleteFood(${index})">Delete</button>
     `;
 
