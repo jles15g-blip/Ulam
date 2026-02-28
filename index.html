@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leslie’s Food List</title>
+<title>Leslie's Food List</title>
 <style>
   :root {
     --accent: #f57c00;
@@ -124,7 +124,7 @@
 </head>
 <body>
 
-<h2>Leslie’s Food List</h2>
+<h2>Leslie's Food List</h2>
 
 <input id="search" placeholder="🔍 Search foods..." oninput="render()">
 
@@ -264,14 +264,25 @@ function addFood() {
   render();
 }
 
-function copyToClipboard(text) {
-  const el = document.createElement('textarea');
-  el.value = text;
-  document.body.appendChild(el);
-  el.select();
-  document.execCommand('copy');
-  document.body.removeChild(el);
-  alert("Copied!");
+function copyToClipboard(foodId) {
+  const food = foods.find(f => f.id === foodId);
+  if (!food) return;
+  
+  const ingString = food.ingredients.map(i => `• ${i.qty}${i.unit} ${i.name}`).join('\n');
+  const text = `${food.name}\n${ingString}`;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Copied!");
+  }).catch(() => {
+    // Fallback for older browsers
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    alert("Copied!");
+  });
 }
 
 function deleteFood(id) {
@@ -329,7 +340,7 @@ function render() {
       <span style="font-size:0.8rem; opacity:0.7;">📅 ${food.date}</span>
       <div class="ingredients-box">${ingString}</div>
       <div class="card-btns">
-        <button class="copy-btn" onclick="copyToClipboard('${food.name}\\n${ingString.replace(/'/g, "\\'")}')">Copy</button>
+        <button class="copy-btn" onclick="copyToClipboard(${food.id})">Copy</button>
         <button class="edit-btn" onclick="editFood(${food.id})">Edit</button>
         <button class="delete-btn" onclick="deleteFood(${food.id})">Delete</button>
       </div>
