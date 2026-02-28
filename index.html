@@ -262,4 +262,82 @@ function addFood() {
 // Fixed Copy Function
 async function copyIngredients(text) {
   try {
-    await navigator.clipboard.writeText(text
+    await navigator.clipboard.writeText(text);
+    alert('Copied to clipboard!');
+  } catch (err) {
+    // Fallback for older browsers
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    alert('Copied!');
+  }
+}
+
+function deleteFood(index) {
+  if(confirm("Delete this food?")) {
+    foods.splice(index, 1);
+    save();
+    render();
+  }
+}
+
+function editFood(index) {
+  const food = foods[index];
+  document.getElementById('foodName').value = food.name;
+  document.getElementById('foodDate').value = food.date === 'No date' ? '' : food.date;
+  currentIngredients = [...food.ingredients];
+  renderTempIngredients();
+  foods.splice(index, 1);
+  render();
+}
+
+function render() {
+  const list = document.getElementById('foodList');
+  const query = document.getElementById('search').value.toLowerCase();
+  const sortName = document.getElementById('sortName').value;
+  const sortDate = document.getElementById('sortDate').value;
+
+  let filtered = foods.filter(f => f.name.toLowerCase().includes(query));
+
+  // Sort Date
+  filtered.sort((a, b) => {
+    const da = a.date === 'No date' ? 0 : new Date(a.date).getTime();
+    const db = b.date === 'No date' ? 0 : new Date(b.date).getTime();
+    return sortDate === 'newest' ? db - da : da - db;
+  });
+
+  // Sort Name
+  if (sortName === 'az') filtered.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortName === 'za') filtered.sort((a, b) => b.name.localeCompare(a.name));
+
+  list.innerHTML = '';
+  filtered.forEach((food, index) => {
+    const div = document.createElement('div');
+    div.className = 'food-card';
+    div.style.backgroundColor = food.color;
+
+    const ingText = food.ingredients.map(i => `${i.qty}${i.unit} ${i.name}`).join('\n');
+
+    div.innerHTML = `
+      <strong>${food.name}</strong>
+      <small>📅 Last eaten: ${food.date}</small>
+      <div class="ingredients-box">${ingText}</div>
+      <div class="card-actions">
+        <button class="copy-btn" onclick="copyIngredients(\`${ingText}\`)">Copy</button>
+        <button class="edit-btn" onclick="editFood(${index})">Edit</button>
+        <button class="delete-btn" onclick="deleteFood(${index})">Delete</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// Initial render
+render();
+</script>
+
+</body>
+</html>
