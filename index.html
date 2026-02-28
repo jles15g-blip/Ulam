@@ -1,419 +1,265 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leslie’s Food List</title>
 <style>
-body {
-  font-family: Arial;
-  padding: 20px;
-  background: #121212;
-  color: #ffffff;
-}
+  :root {
+    --accent: #f57c00;
+    --bg: #121212;
+    --card-bg: #1e1e1e;
+  }
 
-/* Search (rounded) */
-#search {
-  width: 100%;
-  padding: 8px;
-  border-radius: 20px;
-  border: none;
-  background: white;
-  color: black;
-  margin-bottom: 8px;
-}
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background: var(--bg);
+    color: #ffffff;
+    max-width: 600px;
+    margin: auto;
+  }
 
-/* Filter panel */
-#filterPanel {
-  display: none;
-  margin-bottom: 12px;
-  background: #1e1e1e;
-  padding: 8px;
-  border-radius: 6px;
-}
+  /* Cool Title Design */
+  h2 {
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    background: linear-gradient(to right, #fbc02d, #f57c00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+  }
 
-/* Food name (big) */
-#foodName {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  background: white;
-  color: black;
-  border: 1px solid #ccc;
-}
+  #search {
+    width: 100%;
+    padding: 12px;
+    border-radius: 25px; /* Rounded */
+    border: none;
+    background: white;
+    color: black;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
 
-/* Ingredient row */
-.input-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
+  #filterPanel {
+    display: none;
+    margin-bottom: 15px;
+    background: #252525;
+    padding: 12px;
+    border-radius: 12px;
+  }
 
-/* Ingredient autocomplete */
-#ingredientName {
-  flex: 1;
-  background: white;
-  color: black;
-  border: 1px solid #ccc;
-  padding: 6px;
-}
+  /* Food Name Bar Rounded */
+  #foodName {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 25px; 
+    margin-bottom: 15px; /* Added space */
+    box-sizing: border-box;
+  }
 
-/* Quantity */
-#quantity {
-  width: 60px;
-  background: white;
-  color: black;
-  border: 1px solid #ccc;
-  padding: 6px;
-}
+  .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
 
-/* Unit dropdown */
-#unit {
-  width: 110px;
-  background: white;
-  color: black;
-  border: 1px solid #ccc;
-  padding: 6px;
-}
+  #ingredientName, #quantity, #unit, #foodDate {
+    background: white;
+    color: black;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+  }
 
-/* Date box */
-#foodDate {
-  width: 100%;
-  padding: 6px;
-  background: white;
-  color: black;
-  border: 1px solid #ccc;
-}
+  #ingredientName { flex: 2; }
+  #quantity { width: 50px; }
+  #unit { flex: 1; }
+  #foodDate { width: 100%; margin-top: 10px; box-sizing: border-box;}
 
-/* Buttons */
-button {
-  border-radius: 4px;
-  cursor: pointer;
-}
+  /* Food Cards */
+  .food-card {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 15px;
+    color: #121212; /* Dark text for light random colors */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+  }
 
-#addIngredientBtn {
-  background: #fbc02d;
-  color: black;
-  border: none;
-  padding: 6px;
-  margin-top: 4px;
-}
-#saveFoodBtn {
-  background: #f57c00;
-  color: white;
-  border: none;
-  padding: 8px;
-  margin-top: 8px;
-}
+  .food-card:hover { transform: translateY(-3px); }
 
-function randomColor() {
-  const h = Math.floor(Math.random() * 360);
-  const s = 60;
-  const l = 85;
-  return `hsl(${h}, ${s}%, ${l}%)`;
-}
-/* Card buttons */
-button.copy-btn {
-  background: #1976d2;
-  color: white;
-}
+  .food-card strong { font-size: 1.2rem; display: block; margin-bottom: 5px; }
 
-button.edit-btn {
-  background: #388e3c;
-  color: white;
-}
+  .ingredients-box {
+    background: rgba(255,255,255,0.4);
+    padding: 8px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-family: monospace;
+    white-space: pre-line;
+  }
 
-button.delete-btn {
-  background: #d32f2f;
-  color: white;
-}
+  /* Buttons */
+  button {
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 10px 15px;
+    border: none;
+    transition: opacity 0.2s;
+  }
 
-.ingredients {
-  white-space: pre-line;
-}
-  
+  button:active { opacity: 0.7; }
+
+  #addIngredientBtn { background: #fbc02d; width: 100%; margin-bottom: 15px;}
+  #saveFoodBtn { background: #f57c00; color: white; width: 100%; font-size: 16px; margin-top: 10px;}
+
+  .card-actions { display: flex; gap: 5px; margin-top: 10px; }
+  .copy-btn { background: #1976d2; color: white; flex: 1; }
+  .edit-btn { background: #388e3c; color: white; }
+  .delete-btn { background: #d32f2f; color: white; }
+
+  .temp-ingredient {
+    background: #444;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin: 3px;
+    font-size: 0.85rem;
+  }
 </style>
 </head>
 <body>
 
 <h2>Leslie’s Food List</h2>
 
-<!-- Search -->
-<input id="search" placeholder="Search food..." onkeyup="render()">
+<input id="search" placeholder="🔍 Search your food..." onkeyup="render()">
 
-<!-- Filters -->
-<button onclick="toggleFilters()">Filters</button>
+<div style="text-align: right; margin-bottom: 10px;">
+  <button onclick="toggleFilters()" style="background: #444; color: white; font-size: 12px;">⚙️ Filters</button>
+</div>
 
 <div id="filterPanel">
-  <select id="sortName" onchange="render()">
+  <select id="sortName" onchange="render()" style="width: 100%; margin-bottom: 5px; padding: 5px;">
     <option value="az">Sort Name A → Z</option>
     <option value="za">Sort Name Z → A</option>
   </select>
-
-  <select id="sortDate" onchange="render()">
+  <select id="sortDate" onchange="render()" style="width: 100%; padding: 5px;">
     <option value="newest">Date: Newest → Oldest</option>
     <option value="oldest">Date: Oldest → Newest</option>
   </select>
 </div>
 
-<!-- Food name -->
-<input id="foodName" placeholder="Food name">
+<input id="foodName" placeholder="What's the dish name?">
 
-<!-- Ingredient row -->
 <div class="input-row">
   <input id="ingredientName" list="ingredientSuggestions" placeholder="Ingredient">
   <datalist id="ingredientSuggestions"></datalist>
 
-  <input id="quantity" type="number" min="1" max="9" value="1">
+  <input id="quantity" type="number" min="1" max="99" value="1">
 
   <select id="unit">
-    <option value="">(no unit)</option>
+    <option value="">(unit)</option>
     <option value="pack">pack</option>
-    <option value="packs">packs</option>
     <option value="tin">tin</option>
-    <option value="tins">tins</option>
     <option value="carton">carton</option>
-    <option value="cartons">cartons</option>
     <option value="bottle">bottle</option>
-    <option value="bottles">bottles</option>
     <option value="pc">pc</option>
-    <option value="pcs">pcs</option>
   </select>
 </div>
 
-<button id="addIngredientBtn" onclick="addIngredient()">Add Ingredient</button>
+<button id="addIngredientBtn" onclick="addIngredient()">+ Add Ingredient</button>
+<div id="ingredientList" style="margin-bottom: 10px;"></div>
 
-<div id="ingredientList"></div>
-
-<!-- Date -->
-<input id="foodDate" type="date" placeholder="Date">
-
-<!-- Save -->
-<button id="saveFoodBtn" onclick="addFood()">Save Food</button>
+<input id="foodDate" type="date">
+<button id="saveFoodBtn" onclick="addFood()">Save to My List</button>
 
 <div id="foodList"></div>
 
 <script>
 let foods = JSON.parse(localStorage.getItem('foods')) || [];
-let ingredients = [];
+let currentIngredients = [];
 
-// Save
 function save() {
   localStorage.setItem('foods', JSON.stringify(foods));
 }
 
-// Toggle filters
 function toggleFilters() {
   const panel = document.getElementById('filterPanel');
   panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 }
 
-// Random color (no duplicates mostly)
-function randomColor() {
+function randomPastelColor() {
   const colors = [
-    '#fce4ec', '#e8f5e9', '#e3f2fd',
-    '#fff3e0', '#f3e5f5', '#e0f7fa',
-    '#d1c4e9', '#c8e6c9', '#ffccbc'
+    '#FFADAD', '#FFD6A5', '#FDFFB6', 
+    '#CAFFBF', '#9BF6FF', '#A0C4FF', 
+    '#BDB2FF', '#FFC6FF', '#FFFFFC'
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// Add ingredient
 function addIngredient() {
   const name = document.getElementById('ingredientName').value.trim();
   const qty = document.getElementById('quantity').value;
   const unit = document.getElementById('unit').value;
 
-  if (!name) {
-    alert('Enter ingredient name');
-    return;
-  }
+  if (!name) return alert('Enter ingredient name');
 
-  const existing = ingredients.find(i => i.name.toLowerCase() === name.toLowerCase());
-
-  if (existing) {
-    existing.qty = qty;
-    existing.unit = unit;
-  } else {
-    ingredients.push({ name, qty, unit });
-  }
-
+  currentIngredients.push({ name, qty, unit });
+  
   document.getElementById('ingredientName').value = '';
   document.getElementById('quantity').value = '1';
-
-  renderIngredients();
-  updateSuggestions();
+  renderTempIngredients();
 }
 
-// Render ingredients
-function renderIngredients() {
+function renderTempIngredients() {
   const list = document.getElementById('ingredientList');
-  list.innerHTML = '';
-
-  ingredients.forEach((ing, index) => {
-    const unitText = ing.unit ? ` ${ing.unit}` : '';
-    const div = document.createElement('div');
-    div.style.background = '#2e7d32';
-    div.style.padding = '6px';
-    div.style.margin = '4px 0';
-    div.style.borderRadius = '4px';
-
-    div.innerHTML = `
-      ${ing.qty}${unitText} ${ing.name}
-      <button onclick="editIngredient(${index})">Edit</button>
-      <button onclick="deleteIngredient(${index})">Delete</button>
-    `;
-    list.appendChild(div);
-  });
+  list.innerHTML = currentIngredients.map((ing, i) => `
+    <span class="temp-ingredient">
+      ${ing.qty}${ing.unit} ${ing.name} 
+      <span style="color:red; cursor:pointer; margin-left:5px" onclick="removeTemp(${i})">×</span>
+    </span>
+  `).join('');
 }
 
-function editIngredient(index) {
-  const ing = ingredients[index];
-  document.getElementById('ingredientName').value = ing.name;
-  document.getElementById('quantity').value = ing.qty;
-  document.getElementById('unit').value = ing.unit || '';
-  ingredients.splice(index, 1);
-  renderIngredients();
+function removeTemp(index) {
+  currentIngredients.splice(index, 1);
+  renderTempIngredients();
 }
 
-function deleteIngredient(index) {
-  ingredients.splice(index, 1);
-  renderIngredients();
-}
-
-// Add food
 function addFood() {
   const name = document.getElementById('foodName').value.trim();
   const date = document.getElementById('foodDate').value;
 
-  if (!name || ingredients.length === 0) {
-    alert('Enter food name and at least one ingredient');
+  if (!name || currentIngredients.length === 0) {
+    alert('Missing food name or ingredients!');
     return;
   }
 
   foods.push({
     name,
-    ingredients: [...ingredients],
+    ingredients: [...currentIngredients],
     date: date || 'No date',
-    color: randomColor()
+    color: randomPastelColor()
   });
 
-  ingredients = [];
-  renderIngredients();
-  save();
-  render();
-
+  currentIngredients = [];
   document.getElementById('foodName').value = '';
   document.getElementById('foodDate').value = '';
-}
-
-// Suggestions (autocomplete)
-function updateSuggestions() {
-  const datalist = document.getElementById('ingredientSuggestions');
-
-  const existing = [...new Set(
-    foods.flatMap(f => f.ingredients.map(i => i.name))
-  )];
-
-  datalist.innerHTML = '';
-
-  existing.forEach(name => {
-    const opt = document.createElement('option');
-    opt.value = name;
-    datalist.appendChild(opt);
-  });
-}
-
-// Copy ingredients (working)
-function copyIngredients(text) {
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand('copy');
-  document.body.removeChild(textarea);
-  alert('Copied — paste in Messenger');
-}
-
-// Edit food
-function editFood(index) {
-  const food = foods[index];
-
-  document.getElementById('foodName').value = food.name;
-  document.getElementById('foodDate').value = food.date === 'No date' ? '' : food.date;
-
-  ingredients = [...food.ingredients];
-  renderIngredients();
-
-  foods.splice(index, 1);
+  renderTempIngredients();
   save();
   render();
 }
 
-// Delete food
-function deleteFood(index) {
-  foods.splice(index, 1);
-  save();
-  render();
-}
-
-// Render list (search + sort)
-function render() {
-  const list = document.getElementById('foodList');
-  const query = document.getElementById('search').value.toLowerCase();
-  const sortName = document.getElementById('sortName').value;
-  const sortDate = document.getElementById('sortDate').value;
-
-  list.innerHTML = '';
-
-  let filtered = foods.filter(food =>
-    food.name.toLowerCase().includes(query)
-  );
-
-  filtered.sort((a, b) => {
-    const da = a.date === 'No date' ? 0 : new Date(a.date).getTime();
-    const db = b.date === 'No date' ? 0 : new Date(b.date).getTime();
-
-    return sortDate === 'newest' ? db - da : da - db;
-  });
-
-  if (sortName === 'az') {
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
-  } else {
-    filtered.sort((a, b) => b.name.localeCompare(a.name));
-  }
-
-  list.innerHTML = '';
-
-  filtered.forEach((food, index) => {
-    const div = document.createElement('div');
-    div.className = 'food-card';
-
-    const ingredientsText = food.ingredients
-      .map(i => `${i.qty} ${i.unit} ${i.name}`)
-      .join('\n');
-
-    div.innerHTML = `
-      <strong>${food.name}</strong><br>
-      <small>Last eaten: ${food.date}</small>
-      <div class="ingredients">${ingredientsText}</div>
-
-      <button class="copy-btn" onclick="copyIngredients('${ingredientsText.replace(/'/g, "\\'")}')">
-        Copy
-      </button>
-
-      <button class="edit-btn" onclick="editFood(${index})">Edit</button>
-      <button class="delete-btn" onclick="deleteFood(${index})">Delete</button>
-    `;
-
-    list.appendChild(div);
-  });
-
-  updateSuggestions();
-}
-
-save();
-render();
-</script>
-
-</body>
-</html>
+// Fixed Copy Function
+async function copyIngredients(text) {
+  try {
+    await navigator.clipboard.writeText(text
