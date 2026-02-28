@@ -1,1 +1,34 @@
-<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <link rel="stylesheet" href="styles.css">\n    <title>Food App</title>\n</head>\n<body>\n    <div id="app">\n        <h1>Food Management</h1>\n        <div id="foodCards">\n            <div class="foodCard" contenteditable="true">\n                <h2>Food Item 1</h2>\n                <p>Quantity: <input type="number" id="quantity" style="width: 45px;" value="1"></p>\n                <button id="saveFoodBtn" style="padding: 10px 20px; width: auto; display: block; margin: 0 auto 15px;">Save</button>\n            </div>\n            <div class="foodCard" contenteditable="true">\n                <h2>Food Item 2</h2>\n                <p>Quantity: <input type="number" id="quantity" style="width: 45px;" value="1"></p>\n                <button id="saveFoodBtn" style="padding: 10px 20px; width: auto; display: block; margin: 0 auto 15px;">Save</button>\n            </div>\n        </div>\n    </div>\n    <script src="script.js"></script>\n</body>\n</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leslie's Food List</title>
+    <style>
+        #quantity {
+            width: 45px; /* Changed from 65px to 45px */
+        }
+        #saveFoodBtn {
+            padding: 10px 20px; /* Changed from 16px */
+            width: auto; /* Changed from 100% */
+            display: block; /* New style */
+            margin: 0 auto 15px; /* Changed from margin as appropriate */
+        }
+        .food-card {
+            contenteditable: true; /* Added contenteditable attribute */
+        }
+    </style>
+</head>
+<body>
+    <h1>Leslie's Favorite Foods</h1>
+    <div id="food-list">
+        <div class="food-card">Pizza</div>
+        <div class="food-card">Pasta</div>
+        <div class="food-card">Burger</div>
+        <div class="food-card">Sushi</div>
+        <!-- Add more food items as needed -->
+    </div>
+    <input type="number" id="quantity" placeholder="Quantity">
+    <button id="saveFoodBtn">Save Food</button>
+</body>
+</html>
