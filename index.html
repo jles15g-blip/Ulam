@@ -105,11 +105,13 @@ button {
   margin-top: 8px;
 }
 
-.food-card {
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  color: #000;
+function randomColor() {
+  const colors = [
+    '#fce4ec', '#e8f5e9', '#e3f2fd',
+    '#fff3e0', '#f3e5f5', '#e0f7fa',
+    '#d1c4e9', '#c8e6c9', '#ffccbc'
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
 }
 /* Card buttons */
 button.copy-btn {
