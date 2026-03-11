@@ -364,15 +364,20 @@ function render() {
     const ingString = food.ingredients.map(i => `• ${i.qty}${i.unit} ${i.name}`).join('\n');
     
     card.innerHTML = `
-      <strong>${food.name}</strong>
-      <span style="font-size:0.8rem; opacity:0.7;">📅 ${food.date}</span>
-      <div class="ingredients-box">${ingString}</div>
-      <div class="card-btns">
-        <button class="copy-btn" onclick="copyToClipboard(${food.id})">Copy</button>
-        <button class="edit-btn" onclick="editFood(${food.id})">Edit</button>
-        <button class="delete-btn" onclick="deleteFood(${food.id})">Delete</button>
-      </div>
-    `;
+  <div class="food-title" onclick="toggleFood(${food.id})">
+    ${food.name} <span style="font-size:0.8rem; opacity:0.7;">📅 ${food.date}</span>
+  </div>
+
+  <div id="details-${food.id}" class="food-details">
+    <div class="ingredients-box">${ingString}</div>
+
+    <div class="card-btns">
+      <button class="copy-btn" onclick="copyToClipboard(${food.id})">Copy</button>
+      <button class="edit-btn" onclick="editFood(${food.id})">Edit</button>
+      <button class="delete-btn" onclick="deleteFood(${food.id})">Delete</button>
+    </div>
+  </div>
+`;
     listDiv.appendChild(card);
   });
 }
